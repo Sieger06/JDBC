@@ -1,23 +1,25 @@
 package model;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import javax.persistence.*;
 
-@Data
+@Getter
+@Setter
+@ToString
 
+@Entity
+@Table (name = "city")
 public class City {
-    private Integer cityId;
+    @Id
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @Column (name = "city_id")
+    private Integer id;
+    @Column (name = "city_name")
     private String cityName;
 
-
-    static void createCity (ResultSet resultSet) throws SQLException {
-        City city = new City();
-
-        city.setCityId(resultSet.getInt("city_id"));
-        city.setCityName(resultSet.getString("city_name"));
+    public City() {
     }
-
-
 }

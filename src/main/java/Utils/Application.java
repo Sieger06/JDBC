@@ -1,3 +1,5 @@
+package Utils;
+
 import java.sql.SQLException;
 
 public class Application {

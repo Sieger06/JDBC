@@ -1,88 +1,42 @@
 package DAO;
 
 import model.Employee;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
+import Utils.HibernateSessionFactoryUtil;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 public class EmployeeDAOImpl implements EmployeeDAO {
-    private Connection connection;
-
-    public EmployeeDAOImpl(Connection connection) {
-        this.connection = connection;
-    }
-
     @Override
-    public void create(Employee employee) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(
-                "INSERT INTO employee (first_name, last_name, gender, age, city_id ) " +
-                        "VALUES ((?), (?), (?), (?), (?))");
-
-        statement.setString(1, employee.getFirstname());
-        statement.setString(2, employee.getLastName());
-        statement.setString(3, employee.getGender());
-        statement.setInt(4, employee.getAge());
-        statement.setInt(5, employee.getCityId());
-
-        statement.executeUpdate();
-    }
-
-    @Override
-    public Employee getById(Integer id) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(
-                "SELECT employee.* , city.* FROM employee " +
-                        "INNER JOIN city ON employee.city_id = city.city_id " +
-                        "WHERE employee.id = ?");
-        statement.setInt(1, id);
-        statement.setMaxRows(1);
-
-        ResultSet resultSet = statement.executeQuery();
-        resultSet.next();
-
-        return Employee.createEmployee(resultSet);
-    }
-
-    @Override
-    public ArrayList<Employee> getAll() throws SQLException {
-        ArrayList<Employee> employees = new ArrayList<>();
-
-        PreparedStatement statement = connection.prepareStatement(
-                "SELECT employee.* , city.* FROM employee " +
-                        "INNER JOIN city ON employee.city_id = city.city_id");
-
-        ResultSet resultSet = statement.executeQuery();
-
-        while (resultSet.next()){
-            employees.add(Employee.createEmployee(resultSet));
+    public void create(Employee e) {
+        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()){
+            Transaction transaction = session.beginTransaction();
+            session.save(e);
+            transaction.commit();
         }
-
-        return employees;
     }
 
     @Override
-    public void updateById(Integer id, Employee employee) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(
-                "UPDATE employee SET " +
-                        "first_name = (?), last_name = (?), gender = (?), age = (?), city_id = (?) " +
-                        "WHERE id = (?)");
-
-        statement.setString(1, employee.getFirstname());
-        statement.setString(2, employee.getLastName());
-        statement.setString(3, employee.getGender());
-        statement.setInt(4, employee.getAge());
-        statement.setInt(5, employee.getCityId());
-        statement.setInt(6, id);
-
-        statement.executeUpdate();
+    public Employee geyById(Integer id) {
+        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()){
+            return session.get(Employee.class, id);
+        }
     }
 
     @Override
-    public void removeById(Integer id) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement("DELETE FROM employee WHERE id = (?)");
-        statement.setInt(1, id);
-        statement.executeUpdate();
+    public void update(Employee e) {
+        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()){
+            Transaction transaction = session.beginTransaction();
+            session.update(e);
+            transaction.commit();
+        }
+    }
+
+    @Override
+    public void removeById (Integer id) {
+        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()){
+            Transaction transaction = session.beginTransaction();
+            session.remove(session.get(Employee.class, id));
+            transaction.commit();
+        }
     }
 }
